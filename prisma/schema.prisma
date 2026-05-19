@@ -1,0 +1,325 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Auth ────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  name      String?
+  email     String   @unique
+  password  String
+  role      Role     @default(ADMIN)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Role {
+  ADMIN
+  SUPER_ADMIN
+}
+
+// ─── Catalogue ───────────────────────────────────────────────────────────────
+
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  iconName    String?
+  sortOrder   Int       @default(0)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  description String      @db.Text
+  shortDesc   String?
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id])
+  images      String[]
+  specs       Json?
+  dailyRate   Decimal     @db.Decimal(10, 2)
+  weeklyRate  Decimal?    @db.Decimal(10, 2)
+  depositRate Decimal     @default(0.25) @db.Decimal(5, 4)
+  stockQty         Int         @default(1)
+  isAvailable      Boolean     @default(true)
+  isFeatured       Boolean     @default(false)
+  replacementPrice Decimal?    @db.Decimal(10, 2)
+  weightKg         Float?
+  dimensions       String?
+  powerW           Int?
+  tags        String[]
+  quoteItems  QuoteItem[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([categoryId])
+  @@index([isAvailable, isFeatured])
+}
+
+// ─── Quotes ──────────────────────────────────────────────────────────────────
+
+model Quote {
+  id             String        @id @default(cuid())
+  reference      String        @unique
+  status         QuoteStatus   @default(PENDING)
+  customerName   String
+  customerEmail  String
+  customerPhone  String?
+  eventType      String
+  eventDate      DateTime
+  eventEndDate   DateTime?
+  venueAddress   String
+  guestCount     Int?
+  notes          String?       @db.Text
+  hireStartDate  DateTime
+  hireEndDate    DateTime
+  hireDays       Int
+  equipmentTotal Decimal       @db.Decimal(10, 2)
+  deliveryFee    Decimal       @default(0) @db.Decimal(10, 2)
+  setupFee       Decimal       @default(0) @db.Decimal(10, 2)
+  extrasTotal    Decimal       @default(0) @db.Decimal(10, 2)
+  grandTotal     Decimal       @db.Decimal(10, 2)
+  depositAmount  Decimal       @db.Decimal(10, 2)
+  deliveryTierId String?
+  deliveryTier   DeliveryTier? @relation(fields: [deliveryTierId], references: [id])
+  selectedExtras Json?
+  adminNotes     String?       @db.Text
+  respondedAt    DateTime?
+  items          QuoteItem[]
+  invoice        Invoice?
+  contract       Contract?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([status])
+  @@index([customerEmail])
+  @@index([hireStartDate])
+}
+
+enum QuoteStatus {
+  PENDING
+  REVIEWING
+  APPROVED
+  REJECTED
+  EXPIRED
+  RETURNED
+}
+
+model QuoteItem {
+  id          String  @id @default(cuid())
+  quoteId     String
+  quote       Quote   @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product @relation(fields: [productId], references: [id])
+  productName String
+  dailyRate   Decimal @db.Decimal(10, 2)
+  quantity    Int     @default(1)
+  hireDays    Int
+  lineTotal   Decimal @db.Decimal(10, 2)
+
+  @@index([quoteId])
+  @@index([productId])
+}
+
+// ─── Pricing ─────────────────────────────────────────────────────────────────
+
+model PricingConfig {
+  id            String         @id @default(cuid())
+  isActive      Boolean        @default(true)
+  setupFee      Decimal        @default(0) @db.Decimal(10, 2)
+  setupFeeLabel String         @default("Setup & Collection")
+  vatRate       Decimal        @default(0) @db.Decimal(5, 4)
+  vatIncluded   Boolean        @default(false)
+  deliveryTiers DeliveryTier[]
+  extras        PricingExtra[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model DeliveryTier {
+  id              String        @id @default(cuid())
+  pricingConfigId String
+  pricingConfig   PricingConfig @relation(fields: [pricingConfigId], references: [id], onDelete: Cascade)
+  label           String
+  description     String?
+  priceType       PriceType     @default(FIXED)
+  fixedPrice      Decimal?      @db.Decimal(10, 2)
+  pricePerMile    Decimal?      @db.Decimal(10, 2)
+  minDistance     Int?
+  maxDistance     Int?
+  sortOrder       Int           @default(0)
+  quotes          Quote[]
+
+  @@index([pricingConfigId])
+}
+
+enum PriceType {
+  FIXED
+  PER_MILE
+  FREE
+}
+
+model PricingExtra {
+  id              String         @id @default(cuid())
+  pricingConfigId String
+  pricingConfig   PricingConfig  @relation(fields: [pricingConfigId], references: [id], onDelete: Cascade)
+  name            String
+  description     String?
+  price           Decimal        @db.Decimal(10, 2)
+  priceType       ExtraPriceType @default(FIXED)
+  isDefault       Boolean        @default(false)
+  sortOrder       Int            @default(0)
+}
+
+enum ExtraPriceType {
+  FIXED
+  PER_DAY
+}
+
+// ─── Enquiries ───────────────────────────────────────────────────────────────
+
+model Enquiry {
+  id          String        @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  subject     String?
+  message     String        @db.Text
+  status      EnquiryStatus @default(UNREAD)
+  adminNotes  String?       @db.Text
+  respondedAt DateTime?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([status])
+}
+
+enum EnquiryStatus {
+  UNREAD
+  READ
+  RESPONDED
+}
+
+// ─── Blog ────────────────────────────────────────────────────────────────────
+
+model BlogPost {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  excerpt     String?
+  content     String    @db.Text
+  coverImage  String?
+  published   Boolean   @default(false)
+  publishedAt DateTime?
+  tags        String[]
+  seoTitle    String?
+  seoDesc     String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([published, publishedAt])
+}
+
+// ─── Invoices ────────────────────────────────────────────────────────────────
+
+model Invoice {
+  id              String        @id @default(cuid())
+  number          String        @unique
+  quoteId         String?       @unique
+  quote           Quote?        @relation(fields: [quoteId], references: [id])
+  status          InvoiceStatus @default(DRAFT)
+  customerName    String
+  customerEmail   String
+  customerPhone   String?
+  customerAddress String?
+  issueDate       DateTime      @default(now())
+  dueDate         DateTime
+  subtotal        Decimal       @db.Decimal(10, 2)
+  vatRate         Decimal       @default(0) @db.Decimal(5, 4)
+  vatAmount       Decimal       @db.Decimal(10, 2)
+  total           Decimal       @db.Decimal(10, 2)
+  depositPaid     Decimal       @default(0) @db.Decimal(10, 2)
+  amountDue       Decimal       @db.Decimal(10, 2)
+  notes           String?       @db.Text
+  terms           String?       @db.Text
+  sentAt          DateTime?
+  paidAt          DateTime?
+  items           InvoiceItem[]
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@index([status])
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Int     @default(1)
+  unitPrice   Decimal @db.Decimal(10, 2)
+  total       Decimal @db.Decimal(10, 2)
+
+  @@index([invoiceId])
+}
+
+// ─── Contracts ───────────────────────────────────────────────────────────────
+
+model Contract {
+  id              String         @id @default(cuid())
+  token           String         @unique @default(cuid())
+  quoteId         String         @unique
+  quote           Quote          @relation(fields: [quoteId], references: [id])
+  status          ContractStatus @default(PENDING)
+
+  customerName    String
+  customerEmail   String
+  customerPhone   String?
+  eventType       String
+  eventDate       DateTime
+  venueAddress    String
+  hireStartDate   DateTime
+  hireEndDate     DateTime
+
+  equipmentList   Json
+  grandTotal      Decimal        @db.Decimal(10, 2)
+  depositAmount   Decimal        @db.Decimal(10, 2)
+
+  terms           String         @db.Text
+
+  signatureName   String?
+  signatureData   String?        @db.Text
+  signedAt        DateTime?
+  signedIp        String?
+
+  sentAt          DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([status])
+}
+
+enum ContractStatus {
+  PENDING
+  SIGNED
+  EXPIRED
+}
