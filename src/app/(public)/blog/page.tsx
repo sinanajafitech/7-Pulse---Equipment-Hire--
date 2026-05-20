@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { connection } from "next/server"
 import Link from "next/link"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +14,8 @@ export const metadata: Metadata = {
 }
 
 export default async function BlogPage() {
+  await connection()
+
   const posts = await prisma.blogPost.findMany({
     where: { published: true },
     orderBy: { publishedAt: "desc" },

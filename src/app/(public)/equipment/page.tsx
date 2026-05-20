@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { connection } from "next/server"
 import Link from "next/link"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
@@ -14,6 +15,8 @@ export default async function EquipmentPage({
 }: {
   searchParams: Promise<{ category?: string; search?: string; sort?: string }>
 }) {
+  await connection()
+
   const params = await searchParams
   const where = {
     isAvailable: true,

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma"
+import { connection } from "next/server"
 import Link from "next/link"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -10,6 +11,8 @@ import { AddToQuoteButton } from "@/components/equipment/AddToQuoteButton"
 const categoryIcons = { Volume2, Lightbulb, Disc3, Package }
 
 export default async function HomePage() {
+  await connection()
+
   const [rawFeatured, categories] = await Promise.all([
     prisma.product.findMany({ where: { isFeatured: true, isAvailable: true }, include: { category: true }, take: 6 }),
     prisma.category.findMany({ orderBy: { sortOrder: "asc" }, include: { _count: { select: { products: { where: { isAvailable: true } } } } } }),
