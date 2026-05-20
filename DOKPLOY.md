@@ -37,6 +37,7 @@ The container runs:
 
 ```sh
 npx prisma db push
+npx tsx prisma/seed.ts
 node server.js
 ```
 
