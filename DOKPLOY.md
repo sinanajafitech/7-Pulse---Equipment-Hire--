@@ -36,8 +36,8 @@ Create a PostgreSQL service in Dokploy, then use its internal connection string 
 The container runs:
 
 ```sh
-npx prisma migrate deploy
+npx prisma db push
 node server.js
 ```
 
-That means migrations are applied when the container starts, not while the Docker image is being built.
+That means the database schema is applied when the container starts, not while the Docker image is being built.
