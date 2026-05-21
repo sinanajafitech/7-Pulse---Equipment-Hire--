@@ -1,11 +1,11 @@
 import dotenv from "dotenv"
 dotenv.config({ path: ".env.local" })
-dotenv.config() // fallback to .env
-import { PrismaPg } from "@prisma/adapter-pg"
+dotenv.config()
+import { PrismaMariaDb } from "@prisma/adapter-mariadb"
 import { PrismaClient } from "../src/generated/prisma/client"
 import { hashSync } from "bcryptjs"
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+const adapter = new PrismaMariaDb(process.env.DATABASE_URL!)
 const prisma = new PrismaClient({ adapter })
 
 async function main() {

@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
 }
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
@@ -46,7 +46,7 @@ model Product {
   shortDesc   String?
   categoryId  String
   category    Category    @relation(fields: [categoryId], references: [id])
-  images      String[]
+  images      Json        @default("[]")
   specs       Json?
   dailyRate   Decimal     @db.Decimal(10, 2)
   weeklyRate  Decimal?    @db.Decimal(10, 2)
@@ -58,7 +58,7 @@ model Product {
   weightKg         Float?
   dimensions       String?
   powerW           Int?
-  tags        String[]
+  tags        Json        @default("[]")
   quoteItems  QuoteItem[]
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
@@ -222,7 +222,7 @@ model BlogPost {
   coverImage  String?
   published   Boolean   @default(false)
   publishedAt DateTime?
-  tags        String[]
+  tags        Json        @default("[]")
   seoTitle    String?
   seoDesc     String?
   createdAt   DateTime  @default(now())

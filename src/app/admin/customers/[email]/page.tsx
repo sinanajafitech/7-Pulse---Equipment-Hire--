@@ -12,7 +12,7 @@ export default async function CustomerDetailPage({ params }: { params: Promise<{
   const decodedEmail = decodeURIComponent(email)
 
   const quotes = await prisma.quote.findMany({
-    where: { customerEmail: { equals: decodedEmail, mode: "insensitive" } },
+    where: { customerEmail: { equals: decodedEmail } },
     include: { items: true, contract: { select: { status: true, token: true } } },
     orderBy: { createdAt: "desc" },
   })

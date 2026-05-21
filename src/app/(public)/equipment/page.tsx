@@ -22,8 +22,7 @@ export default async function EquipmentPage({
     isAvailable: true,
     ...(params.category ? { category: { slug: params.category } } : {}),
     ...(params.search ? { OR: [
-      { name: { contains: params.search, mode: "insensitive" as const } },
-      { tags: { has: params.search } },
+      { name: { contains: params.search } },
     ]} : {}),
   }
 

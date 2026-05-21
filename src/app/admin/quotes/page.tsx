@@ -11,9 +11,9 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
   const where = {
     ...(params.status ? { status: params.status as "PENDING" | "REVIEWING" | "APPROVED" | "REJECTED" | "EXPIRED" | "RETURNED" } : {}),
     ...(params.search ? { OR: [
-      { reference: { contains: params.search, mode: "insensitive" as const } },
-      { customerName: { contains: params.search, mode: "insensitive" as const } },
-      { customerEmail: { contains: params.search, mode: "insensitive" as const } },
+      { reference: { contains: params.search } },
+      { customerName: { contains: params.search } },
+      { customerEmail: { contains: params.search } },
     ]} : {}),
   }
 

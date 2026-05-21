@@ -27,6 +27,10 @@ EMAIL_FROM=AudioRent <noreply@your-domain.com>
 ADMIN_EMAIL=
 NEXT_PUBLIC_APP_URL=https://your-domain.com
 NEXT_PUBLIC_APP_NAME=AudioRent
+
+# Admin user created on first seed (defaults shown — override these)
+SEED_ADMIN_EMAIL=admin@audiorent.co.uk
+SEED_ADMIN_PASSWORD=
 ```
 
 ## Database

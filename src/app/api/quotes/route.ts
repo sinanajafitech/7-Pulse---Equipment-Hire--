@@ -22,9 +22,9 @@ export async function GET(req: NextRequest) {
       ...(search
         ? {
             OR: [
-              { reference: { contains: search, mode: "insensitive" as const } },
-              { customerName: { contains: search, mode: "insensitive" as const } },
-              { customerEmail: { contains: search, mode: "insensitive" as const } },
+              { reference: { contains: search } },
+              { customerName: { contains: search } },
+              { customerEmail: { contains: search } },
             ],
           }
         : {}),
