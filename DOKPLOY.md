@@ -35,7 +35,13 @@ SEED_ADMIN_PASSWORD=
 
 ## Database
 
-Create a PostgreSQL service in Dokploy, then use its internal connection string for `DATABASE_URL`.
+Use a MySQL/MariaDB service (or your cPanel MySQL credentials) for `DATABASE_URL`.
+
+**cPanel MySQL format:**
+```
+mysql://cpanel_USERNAME:PASSWORD@localhost:3306/cpanel_DBNAME
+```
+On cPanel, both the database username and database name are prefixed with your cPanel account name (e.g. `myaccount_dbuser` / `myaccount_pulse7`).
 
 The container runs:
 
