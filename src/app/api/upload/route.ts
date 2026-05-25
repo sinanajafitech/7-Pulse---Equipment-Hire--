@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
     if (!file.type.startsWith("image/")) return NextResponse.json({ error: "File must be an image" }, { status: 400 })
     if (file.size > 10 * 1024 * 1024) return NextResponse.json({ error: "File too large (max 10MB)" }, { status: 400 })
 
-    // Use Cloudinary if configured, otherwise save locally
+    // Use Cloudinary if configured
     if (process.env.CLOUDINARY_API_KEY) {
       const { uploadImage } = await import("@/lib/cloudinary")
       const buffer = Buffer.from(await file.arrayBuffer())
@@ -23,12 +23,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ data: result })
     }
 
-    // Local fallback — saves to /public/uploads/
+    // Local storage — UPLOAD_DIR env var lets you point outside the build dir
+    // so images survive redeployments. Falls back to public/uploads for dev.
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const ext = file.name.split(".").pop() ?? "jpg"
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg"
     const filename = `${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
-    const uploadDir = join(process.cwd(), "public", "uploads")
+    const uploadDir = process.env.UPLOAD_DIR ?? join(process.cwd(), "public", "uploads")
     await mkdir(uploadDir, { recursive: true })
     await writeFile(join(uploadDir, filename), buffer)
     const url = `/uploads/${filename}`
