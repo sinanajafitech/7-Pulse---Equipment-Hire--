@@ -1,6 +1,9 @@
 import dotenv from "dotenv"
-dotenv.config({ path: ".env.local" })
-dotenv.config()
+import path from "path"
+
+dotenv.config({ path: path.resolve(__dirname, ".env.local") })
+dotenv.config({ path: path.resolve(__dirname, ".env") })
+
 import { defineConfig } from "prisma/config"
 
 export default defineConfig({
