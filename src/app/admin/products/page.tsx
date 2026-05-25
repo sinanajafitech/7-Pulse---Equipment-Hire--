@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import Link from "next/link"
+import Image from "next/image"
 import { Plus, Edit, Eye, EyeOff, Package } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -44,9 +45,26 @@ export default async function ProductsPage() {
             {products.map((product) => (
               <tr key={product.id} className="hover:bg-muted/20 transition-colors">
                 <td className="px-4 py-3">
-                  <div>
-                    <p className="font-medium text-foreground">{product.name}</p>
-                    <p className="text-xs text-muted-foreground truncate max-w-48">{product.shortDesc}</p>
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-10 w-10 shrink-0 overflow-hidden rounded-md border border-border bg-muted">
+                      {product.images[0] ? (
+                        <Image
+                          src={product.images[0]}
+                          alt={product.name}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <Package className="h-4 w-4 text-muted-foreground/40" />
+                        </div>
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-medium text-foreground">{product.name}</p>
+                      <p className="text-xs text-muted-foreground truncate max-w-48">{product.shortDesc}</p>
+                    </div>
                   </div>
                 </td>
                 <td className="px-4 py-3">
