@@ -131,6 +131,31 @@
   }
 }
 
+@layer base {
+  /* Date / time input calendar icon — amber-tinted on dark background */
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.85) sepia(0.4) saturate(2.5) hue-rotate(5deg) brightness(0.95);
+    cursor: pointer;
+    opacity: 0.7;
+    border-radius: 3px;
+    padding: 2px;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator:hover,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+  /* Ensure date input text color matches theme */
+  input[type="date"]::-webkit-datetime-edit,
+  input[type="datetime-local"]::-webkit-datetime-edit {
+    color: oklch(0.95 0.005 240);
+  }
+  input[type="date"]::-webkit-datetime-edit-fields-wrapper,
+  input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper {
+    color: inherit;
+  }
+}
+
 @layer utilities {
   .gradient-amber {
     background: linear-gradient(135deg, oklch(0.75 0.165 75) 0%, oklch(0.65 0.14 60) 100%);

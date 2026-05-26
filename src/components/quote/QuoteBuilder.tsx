@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Separator } from "@/components/ui/separator"
-import { X, Minus, Plus, ShoppingCart, Loader2, CheckCircle, ArrowRight, Truck, AlertTriangle } from "lucide-react"
+import { X, Minus, Plus, ShoppingCart, Loader2, CheckCircle, ArrowRight, Truck, AlertTriangle, Calendar } from "lucide-react"
 import { toast } from "sonner"
 import Image from "next/image"
 
@@ -177,18 +177,39 @@ export function QuoteBuilder() {
 
             {/* Dates */}
             <div className="rounded-2xl border border-border bg-card p-6">
-              <h2 className="text-lg font-semibold text-foreground mb-4">Hire Dates</h2>
+              <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2"><Calendar className="h-5 w-5 text-primary" />Hire Dates</h2>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Label>Start Date</Label>
-                  <Input type="date" value={hireStartDate} min={new Date().toISOString().split("T")[0]} onChange={(e) => setDates(e.target.value, hireEndDate)} />
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Start Date</Label>
+                  <div className="relative group">
+                    <Input
+                      type="date"
+                      value={hireStartDate}
+                      min={new Date().toISOString().split("T")[0]}
+                      onChange={(e) => setDates(e.target.value, hireEndDate)}
+                      className="h-11 pl-4 pr-10 rounded-xl border-border bg-muted/40 hover:border-primary/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 transition-all cursor-pointer"
+                    />
+                  </div>
                 </div>
-                <div className="space-y-1">
-                  <Label>End Date</Label>
-                  <Input type="date" value={hireEndDate} min={hireStartDate || new Date().toISOString().split("T")[0]} onChange={(e) => setDates(hireStartDate, e.target.value)} />
+                <div className="space-y-2">
+                  <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">End Date</Label>
+                  <div className="relative group">
+                    <Input
+                      type="date"
+                      value={hireEndDate}
+                      min={hireStartDate || new Date().toISOString().split("T")[0]}
+                      onChange={(e) => setDates(hireStartDate, e.target.value)}
+                      className="h-11 pl-4 pr-10 rounded-xl border-border bg-muted/40 hover:border-primary/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20 transition-all cursor-pointer"
+                    />
+                  </div>
                 </div>
               </div>
-              {hireDays > 0 && <p className="text-sm text-primary font-medium mt-3">{hireDays} day{hireDays !== 1 ? "s" : ""} hire</p>}
+              {hireDays > 0 && (
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-primary/10 border border-primary/20 px-3 py-1">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                  <p className="text-sm text-primary font-medium">{hireDays} day{hireDays !== 1 ? "s" : ""} hire</p>
+                </div>
+              )}
             </div>
 
             {/* Delivery */}
@@ -197,15 +218,18 @@ export function QuoteBuilder() {
                 <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2"><Truck className="h-5 w-5 text-primary" />Delivery</h2>
                 <div className="space-y-2">
                   {config.deliveryTiers.map((tier) => (
-                    <label key={tier.id} className={`flex items-center justify-between rounded-xl border p-4 cursor-pointer transition-colors ${deliveryTierId === tier.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/30"}`}>
+                    <label key={tier.id} className={`flex items-center justify-between rounded-xl border p-4 cursor-pointer transition-all duration-150 ${deliveryTierId === tier.id ? "border-primary bg-primary/8 shadow-[0_0_0_1px_oklch(0.75_0.165_75/0.3)]" : "border-border hover:border-primary/40 hover:bg-muted/30"}`}>
                       <div className="flex items-center gap-3">
-                        <input type="radio" name="delivery" checked={deliveryTierId === tier.id} onChange={() => setDeliveryTier(tier.id)} className="text-primary" />
+                        <input type="radio" name="delivery" checked={deliveryTierId === tier.id} onChange={() => setDeliveryTier(tier.id)} className="sr-only" />
+                        <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all duration-150 ${deliveryTierId === tier.id ? "border-primary" : "border-muted-foreground/35"}`}>
+                          {deliveryTierId === tier.id && <div className="h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_6px_oklch(0.75_0.165_75/0.8)]" />}
+                        </div>
                         <div>
                           <p className="font-medium text-foreground text-sm">{tier.label}</p>
-                          {tier.description && <p className="text-xs text-muted-foreground">{tier.description}</p>}
+                          {tier.description && <p className="text-xs text-muted-foreground mt-0.5">{tier.description}</p>}
                         </div>
                       </div>
-                      <span className="text-sm font-semibold text-primary">
+                      <span className={`text-sm font-semibold shrink-0 ml-3 ${deliveryTierId === tier.id ? "text-primary" : "text-muted-foreground"}`}>
                         {tier.priceType === "FREE" ? "Free" : tier.fixedPrice ? formatCurrency(Number(tier.fixedPrice)) : "POA"}
                       </span>
                     </label>
@@ -271,7 +295,7 @@ export function QuoteBuilder() {
               </div>
               <div className="space-y-1">
                 <Label>Event Date *</Label>
-                <Input type="date" required value={form.eventDate} onChange={(e) => setForm((f) => ({ ...f, eventDate: e.target.value }))} />
+                <Input type="date" required value={form.eventDate} onChange={(e) => setForm((f) => ({ ...f, eventDate: e.target.value }))} className="h-10 rounded-xl cursor-pointer" />
               </div>
               <div className="col-span-2 space-y-1">
                 <Label>Venue / Delivery Address *</Label>
