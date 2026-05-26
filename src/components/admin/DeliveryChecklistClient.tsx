@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Printer, RotateCcw } from "lucide-react"
+import { Printer, RotateCcw, CheckSquare, Square, ClipboardList } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 type Item = { id: string; productName: string; quantity: number }
@@ -24,8 +24,10 @@ export function DeliveryChecklistClient({
   const [deliveredOut, setDeliveredOut] = useState<Record<string, boolean>>({})
   const [returned, setReturned] = useState<Record<string, boolean>>({})
 
-  const allOut = items.every((i) => deliveredOut[i.id])
-  const allBack = items.every((i) => returned[i.id])
+  const outCount = Object.values(deliveredOut).filter(Boolean).length
+  const returnCount = Object.values(returned).filter(Boolean).length
+  const allOut = items.length > 0 && outCount === items.length
+  const allBack = items.length > 0 && returnCount === items.length
 
   function toggleAll(type: "out" | "return", value: boolean) {
     const next = Object.fromEntries(items.map((i) => [i.id, value]))
@@ -39,145 +41,154 @@ export function DeliveryChecklistClient({
 
   return (
     <div className="space-y-4">
-      {/* Toolbar — hidden when printing */}
+      {/* Toolbar */}
       <div className="flex items-center gap-2 print:hidden">
         <Button onClick={() => window.print()} className="gap-2">
-          <Printer className="h-4 w-4" /> Print Checklist
+          <Printer className="h-4 w-4" /> Print / Save PDF
         </Button>
         <Button variant="outline" onClick={reset} className="gap-2">
           <RotateCcw className="h-4 w-4" /> Reset
         </Button>
       </div>
 
-      {/* Printable area */}
-      <div className="rounded-lg border border-border bg-card p-6 print:border-0 print:p-0 print:shadow-none space-y-6">
+      {/* Progress pills — screen only */}
+      <div className="flex gap-3 print:hidden">
+        <div className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium border transition-colors ${allOut ? "bg-green-500/10 border-green-500/30 text-green-400" : "bg-card border-border text-muted-foreground"}`}>
+          {allOut ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+          Delivered out: {outCount}/{items.length}
+        </div>
+        <div className={`flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-medium border transition-colors ${allBack ? "bg-green-500/10 border-green-500/30 text-green-400" : "bg-card border-border text-muted-foreground"}`}>
+          {allBack ? <CheckSquare className="h-4 w-4" /> : <Square className="h-4 w-4" />}
+          Returned: {returnCount}/{items.length}
+        </div>
+      </div>
 
-        {/* Header */}
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-xl font-bold text-foreground print:text-2xl">Delivery Checklist</h2>
-            <p className="text-muted-foreground font-mono text-sm mt-0.5">{reference}</p>
-          </div>
-          <div className="text-right text-sm text-muted-foreground space-y-0.5">
-            <p className="font-medium text-foreground">{customerName}</p>
-            {customerPhone && <p>{customerPhone}</p>}
+      {/* ── Printable area ── */}
+      <div className="rounded-xl border border-border bg-card overflow-hidden print:border-0 print:rounded-none print:shadow-none print:bg-white">
+
+        {/* Colour header band */}
+        <div className="bg-primary px-6 py-5 print:py-6">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="rounded-lg bg-white/15 p-2">
+                <ClipboardList className="h-6 w-6 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white tracking-tight">Delivery Checklist</h2>
+                <p className="font-mono text-sm text-white/70 mt-0.5">{reference}</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="font-semibold text-white text-sm">{customerName}</p>
+              {customerPhone && <p className="text-white/70 text-sm">{customerPhone}</p>}
+            </div>
           </div>
         </div>
 
-        {/* Event info */}
-        <div className="grid grid-cols-3 gap-4 rounded-md border border-border p-4 text-sm">
-          <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">Event</p>
-            <p className="font-medium text-foreground">{eventType}</p>
-            <p className="text-muted-foreground">{eventDate}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">Venue</p>
-            <p className="text-foreground">{venueAddress}</p>
-          </div>
-          <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-wide font-medium mb-1">Hire Period</p>
-            <p className="text-foreground">{hirePeriod}</p>
-          </div>
+        {/* Event info strip */}
+        <div className="grid grid-cols-3 divide-x divide-border border-b border-border bg-muted/20 print:bg-gray-50">
+          {[
+            { label: "Event", lines: [eventType, eventDate] },
+            { label: "Venue", lines: [venueAddress] },
+            { label: "Hire Period", lines: [hirePeriod] },
+          ].map(({ label, lines }) => (
+            <div key={label} className="px-5 py-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground print:text-gray-400 mb-1">{label}</p>
+              {lines.map((l, i) => (
+                <p key={i} className={`text-sm ${i === 0 ? "font-semibold text-foreground print:text-gray-900" : "text-muted-foreground print:text-gray-500"}`}>{l}</p>
+              ))}
+            </div>
+          ))}
         </div>
 
         {/* Checklist table */}
-        <table className="w-full text-sm border-collapse">
-          <thead>
-            <tr className="border-b-2 border-border">
-              <th className="py-2 text-left font-semibold text-foreground">Equipment Item</th>
-              <th className="py-2 text-center font-semibold text-foreground w-14">Qty</th>
-              <th className="py-2 text-center font-semibold text-foreground w-32">
-                <div className="flex flex-col items-center gap-1">
-                  <span>Delivered Out</span>
-                  <button
-                    onClick={() => toggleAll("out", !allOut)}
-                    className="text-xs font-normal text-primary underline print:hidden"
-                  >
-                    {allOut ? "uncheck all" : "check all"}
-                  </button>
-                </div>
-              </th>
-              <th className="py-2 text-center font-semibold text-foreground w-32">
-                <div className="flex flex-col items-center gap-1">
-                  <span>Returned</span>
-                  <button
-                    onClick={() => toggleAll("return", !allBack)}
-                    className="text-xs font-normal text-primary underline print:hidden"
-                  >
-                    {allBack ? "uncheck all" : "check all"}
-                  </button>
-                </div>
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {items.map((item) => (
-              <tr key={item.id} className="hover:bg-muted/20 print:hover:bg-transparent">
-                <td className="py-3 font-medium text-foreground">{item.productName}</td>
-                <td className="py-3 text-center text-muted-foreground">{item.quantity}</td>
-                <td className="py-3 text-center">
-                  <input
-                    type="checkbox"
-                    checked={!!deliveredOut[item.id]}
-                    onChange={(e) => setDeliveredOut((p) => ({ ...p, [item.id]: e.target.checked }))}
-                    className="h-5 w-5 cursor-pointer accent-primary print:h-4 print:w-4"
-                  />
-                </td>
-                <td className="py-3 text-center">
-                  <input
-                    type="checkbox"
-                    checked={!!returned[item.id]}
-                    onChange={(e) => setReturned((p) => ({ ...p, [item.id]: e.target.checked }))}
-                    className="h-5 w-5 cursor-pointer accent-primary print:h-4 print:w-4"
-                  />
-                </td>
+        <div className="px-6 py-4 print:px-6 print:py-4">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="border-b-2 border-border print:border-gray-300">
+                <th className="py-3 text-left font-bold text-foreground print:text-gray-900 text-xs uppercase tracking-wide">
+                  Equipment Item
+                </th>
+                <th className="py-3 text-center font-bold text-foreground print:text-gray-900 text-xs uppercase tracking-wide w-12">
+                  Qty
+                </th>
+                <th className="py-3 font-bold text-foreground print:text-gray-900 text-xs uppercase tracking-wide w-36">
+                  <div className="flex flex-col items-center gap-1">
+                    <span>Delivered Out</span>
+                    <button
+                      onClick={() => toggleAll("out", !allOut)}
+                      className="text-[10px] font-normal text-primary underline print:hidden"
+                    >
+                      {allOut ? "uncheck all" : "check all"}
+                    </button>
+                  </div>
+                </th>
+                <th className="py-3 font-bold text-foreground print:text-gray-900 text-xs uppercase tracking-wide w-36">
+                  <div className="flex flex-col items-center gap-1">
+                    <span>Returned</span>
+                    <button
+                      onClick={() => toggleAll("return", !allBack)}
+                      className="text-[10px] font-normal text-primary underline print:hidden"
+                    >
+                      {allBack ? "uncheck all" : "check all"}
+                    </button>
+                  </div>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-
-        {/* Progress summary — screen only */}
-        <div className="flex gap-6 text-sm print:hidden">
-          <span className="text-muted-foreground">
-            Delivered out:
-            <span className={`ml-1 font-semibold ${allOut ? "text-green-500" : "text-foreground"}`}>
-              {Object.values(deliveredOut).filter(Boolean).length}/{items.length}
-            </span>
-          </span>
-          <span className="text-muted-foreground">
-            Returned:
-            <span className={`ml-1 font-semibold ${allBack ? "text-green-500" : "text-foreground"}`}>
-              {Object.values(returned).filter(Boolean).length}/{items.length}
-            </span>
-          </span>
-        </div>
-
-        {/* Footer — print only */}
-        <div className="hidden print:block text-center text-xs text-muted-foreground pt-2">
-          Powered by <a href="https://www.cybercina.co.uk" className="underline">Cybercina</a> — www.cybercina.co.uk
+            </thead>
+            <tbody>
+              {items.map((item, idx) => (
+                <tr
+                  key={item.id}
+                  className={`border-b border-border print:border-gray-100 transition-colors ${
+                    idx % 2 === 0 ? "bg-transparent" : "bg-muted/10 print:bg-gray-50"
+                  } hover:bg-primary/5 print:hover:bg-inherit`}
+                >
+                  <td className="py-3 font-medium text-foreground print:text-gray-900">{item.productName}</td>
+                  <td className="py-3 text-center text-muted-foreground print:text-gray-600 font-mono">{item.quantity}</td>
+                  <td className="py-3 text-center">
+                    <input
+                      type="checkbox"
+                      checked={!!deliveredOut[item.id]}
+                      onChange={(e) => setDeliveredOut((p) => ({ ...p, [item.id]: e.target.checked }))}
+                      className="h-5 w-5 cursor-pointer accent-primary print:h-4 print:w-4"
+                    />
+                  </td>
+                  <td className="py-3 text-center">
+                    <input
+                      type="checkbox"
+                      checked={!!returned[item.id]}
+                      onChange={(e) => setReturned((p) => ({ ...p, [item.id]: e.target.checked }))}
+                      className="h-5 w-5 cursor-pointer accent-primary print:h-4 print:w-4"
+                    />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
 
         {/* Signature section */}
-        <div className="grid grid-cols-2 gap-8 pt-4 border-t border-border">
-          <div className="space-y-4">
-            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Delivered by</p>
-            <div className="border-b border-foreground/40 pb-1 h-8" />
-            <p className="text-xs text-muted-foreground">Name &amp; signature</p>
-            <div className="flex gap-4 text-sm text-muted-foreground">
-              <span>Date:</span>
-              <div className="flex-1 border-b border-foreground/40" />
+        <div className="mx-6 mb-6 grid grid-cols-2 gap-8 rounded-lg border border-border print:border-gray-200 bg-muted/10 print:bg-gray-50 p-5">
+          {[
+            { role: "Delivered by (Staff)", hint: "Name & signature" },
+            { role: "Received by (Customer)", hint: "Name & signature" },
+          ].map(({ role, hint }) => (
+            <div key={role} className="space-y-3">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground print:text-gray-400">{role}</p>
+              <div className="h-10 border-b-2 border-foreground/20 print:border-gray-300" />
+              <p className="text-xs text-muted-foreground print:text-gray-400">{hint}</p>
+              <div className="flex items-center gap-3 text-sm text-muted-foreground print:text-gray-500">
+                <span className="font-medium">Date:</span>
+                <div className="flex-1 border-b border-foreground/20 print:border-gray-300" />
+              </div>
             </div>
-          </div>
-          <div className="space-y-4">
-            <p className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Received by (Customer)</p>
-            <div className="border-b border-foreground/40 pb-1 h-8" />
-            <p className="text-xs text-muted-foreground">Name &amp; signature</p>
-            <div className="flex gap-4 text-sm text-muted-foreground">
-              <span>Date:</span>
-              <div className="flex-1 border-b border-foreground/40" />
-            </div>
-          </div>
+          ))}
+        </div>
+
+        {/* Footer — print only */}
+        <div className="hidden print:block text-center text-xs text-gray-400 pb-4 pt-1 border-t border-gray-100">
+          PULSE 7 EVENTS — Delivery Checklist — {reference}
         </div>
       </div>
     </div>

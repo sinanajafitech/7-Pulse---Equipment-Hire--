@@ -13,9 +13,10 @@ const categoryIcons = { Volume2, Lightbulb, Disc3, Package }
 export default async function HomePage() {
   await connection()
 
-  const [rawFeatured, categories] = await Promise.all([
+  const [rawFeatured, categories, brands] = await Promise.all([
     prisma.product.findMany({ where: { isFeatured: true, isAvailable: true }, include: { category: true }, take: 6 }),
     prisma.category.findMany({ orderBy: { sortOrder: "asc" }, include: { _count: { select: { products: { where: { isAvailable: true } } } } } }),
+    prisma.brand.findMany({ where: { isVisible: true }, orderBy: { sortOrder: "asc" } }),
   ])
 
   const featuredProducts = rawFeatured.map((p) => ({
@@ -181,6 +182,46 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Brands */}
+      {brands.length > 0 && (
+        <section className="py-16 bg-card/50 border-y border-border/50">
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <p className="text-center text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-8">
+              Brands We Work With
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-6 md:gap-10">
+              {brands.map((brand) =>
+                brand.logoUrl ? (
+                  <a
+                    key={brand.id}
+                    href={brand.website ?? undefined}
+                    target={brand.website ? "_blank" : undefined}
+                    rel="noopener noreferrer"
+                    className="group relative flex h-12 w-28 items-center justify-center transition-all duration-200 opacity-50 hover:opacity-100 grayscale hover:grayscale-0"
+                    title={brand.name}
+                  >
+                    <Image
+                      src={brand.logoUrl}
+                      alt={brand.name}
+                      fill
+                      className="object-contain"
+                      unoptimized
+                    />
+                  </a>
+                ) : (
+                  <span
+                    key={brand.id}
+                    className="text-sm font-semibold text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+                  >
+                    {brand.name}
+                  </span>
+                )
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA */}
       <section className="py-16 bg-primary/5 border-y border-primary/10">

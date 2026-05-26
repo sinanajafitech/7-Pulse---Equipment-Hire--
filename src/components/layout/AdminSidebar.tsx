@@ -1,7 +1,7 @@
 "use client"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { LayoutDashboard, Package, FileText, MessageSquare, Settings, Volume2, LogOut, BookOpen, Receipt, Truck, Users } from "lucide-react"
+import { LayoutDashboard, Package, FileText, MessageSquare, Settings, Volume2, LogOut, BookOpen, Receipt, Truck, Users, Award } from "lucide-react"
 import { signOut } from "next-auth/react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -15,6 +15,7 @@ const navItems = [
   { href: "/admin/invoices", label: "Invoices", icon: Receipt },
   { href: "/admin/enquiries", label: "Enquiries", icon: MessageSquare },
   { href: "/admin/blog", label: "Blog", icon: BookOpen },
+  { href: "/admin/brands", label: "Brands", icon: Award },
   { href: "/admin/pricing", label: "Pricing", icon: Settings },
 ]
 
@@ -22,7 +23,7 @@ export function AdminSidebar() {
   const pathname = usePathname()
 
   return (
-    <aside className="flex h-full w-64 flex-col border-r border-border bg-sidebar">
+    <aside className="flex h-full w-64 flex-col border-r border-border bg-sidebar print:hidden">
       <div className="flex h-16 items-center gap-2 border-b border-border px-6">
         <Volume2 className="h-6 w-6 text-primary" />
         <span className="text-lg font-bold text-foreground">PULSE 7 EVENTS</span>

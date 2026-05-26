@@ -16,7 +16,7 @@ export function AdminTopbar({ userName }: { userName?: string | null }) {
   const segments = pathname.split("/").filter(Boolean)
 
   return (
-    <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6">
+    <header className="flex h-16 items-center justify-between border-b border-border bg-card px-6 print:hidden">
       <nav className="flex items-center gap-1 text-sm text-muted-foreground">
         <Home className="h-3.5 w-3.5" />
         {segments.map((segment, i) => (
