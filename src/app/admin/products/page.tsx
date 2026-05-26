@@ -30,7 +30,8 @@ export default async function ProductsPage() {
       </div>
 
       <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[580px]">
           <thead>
             <tr className="border-b border-border bg-muted/30">
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Product</th>
@@ -93,6 +94,7 @@ export default async function ProductsPage() {
             ))}
           </tbody>
         </table>
+        </div>
         {products.length === 0 && (
           <div className="py-16 text-center text-muted-foreground">
             <Package className="mx-auto mb-3 h-8 w-8 opacity-40" />

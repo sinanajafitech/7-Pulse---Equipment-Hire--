@@ -35,7 +35,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
         </div>
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         {statusFilters.map((s) => (
           <Link key={s} href={s ? `/admin/quotes?status=${s}` : "/admin/quotes"}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
@@ -49,7 +49,8 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
       </div>
 
       <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[640px]">
           <thead>
             <tr className="border-b border-border bg-muted/30">
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Reference</th>
@@ -86,6 +87,7 @@ export default async function QuotesPage({ searchParams }: { searchParams: Promi
             ))}
           </tbody>
         </table>
+        </div>
         {quotes.length === 0 && (
           <div className="py-16 text-center text-muted-foreground">
             <FileText className="mx-auto mb-3 h-8 w-8 opacity-40" />

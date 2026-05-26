@@ -48,7 +48,8 @@ export default async function CustomersPage() {
       </div>
 
       <div className="rounded-lg border border-border bg-card overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="border-b border-border bg-muted/30">
               <th className="px-4 py-3 text-left font-medium text-muted-foreground">Customer</th>
@@ -95,6 +96,7 @@ export default async function CustomersPage() {
             })}
           </tbody>
         </table>
+        </div>
         {customers.length === 0 && (
           <div className="py-16 text-center text-muted-foreground">
             <Users className="mx-auto mb-3 h-8 w-8 opacity-40" />
