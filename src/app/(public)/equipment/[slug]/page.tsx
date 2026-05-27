@@ -28,15 +28,42 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params
   const product = await prisma.product.findUnique({ where: { slug }, include: { category: true } })
   if (!product) return { title: "Product Not Found" }
+
   const base = process.env.NEXT_PUBLIC_APP_URL ?? ""
+  const url = `${base}/equipment/${product.slug}`
+
+  const rawDesc = product.shortDesc ?? product.description
+  const description = rawDesc.length > 155
+    ? rawDesc.slice(0, 152).replace(/\s\S*$/, "") + "..."
+    : rawDesc
+
+  const ogImages = (product.images as string[])[0]
+    ? [{ url: (product.images as string[])[0], width: 1200, height: 630, alt: product.name }]
+    : []
+
   return {
     title: product.name,
-    description: product.shortDesc ?? product.description.slice(0, 155),
+    description,
+    keywords: [
+      product.name,
+      `${product.name} hire`,
+      product.category.name,
+      `${product.category.name} hire`,
+      ...(product.tags as string[]),
+    ],
+    alternates: { canonical: url },
     openGraph: {
+      type: "website",
       title: `${product.name} | PULSE 7 EVENTS`,
-      description: product.shortDesc ?? product.description.slice(0, 155),
-      images: product.images[0] ? [{ url: product.images[0] }] : [],
-      url: `${base}/equipment/${product.slug}`,
+      description,
+      url,
+      images: ogImages,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${product.name} | PULSE 7 EVENTS`,
+      description,
+      images: (product.images as string[])[0] ? [(product.images as string[])[0]] : [],
     },
   }
 }
