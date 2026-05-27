@@ -58,6 +58,7 @@ model Product {
   weightKg         Float?
   dimensions       String?
   powerW           Int?
+  youtubeUrl  String?
   tags        Json        @default("[]")
   quoteItems  QuoteItem[]
   createdAt   DateTime    @default(now())

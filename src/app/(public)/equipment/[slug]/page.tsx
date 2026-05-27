@@ -2,10 +2,27 @@ import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import Image from "next/image"
 import { Badge } from "@/components/ui/badge"
-import { Volume2, Zap, Weight, Maximize } from "lucide-react"
+import { Volume2, Zap, Weight, Maximize, Play } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
 import { AddToQuoteButton } from "@/components/equipment/AddToQuoteButton"
 import type { Metadata } from "next"
+
+function getYoutubeEmbedId(url: string): string | null {
+  try {
+    const u = new URL(url)
+    if (u.hostname === "youtu.be") return u.pathname.slice(1).split("?")[0]
+    if (u.hostname.includes("youtube.com")) {
+      const v = u.searchParams.get("v")
+      if (v) return v
+      const parts = u.pathname.split("/")
+      const embedIdx = parts.indexOf("embed")
+      if (embedIdx !== -1) return parts[embedIdx + 1]
+    }
+    return null
+  } catch {
+    return null
+  }
+}
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params
@@ -122,6 +139,27 @@ export default async function ProductDetailPage({ params }: { params: Promise<{ 
               </div>
             </div>
           )}
+
+          {product.youtubeUrl && (() => {
+            const videoId = getYoutubeEmbedId(product.youtubeUrl)
+            return videoId ? (
+              <div>
+                <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
+                  <span className="inline-flex items-center justify-center h-5 w-5 rounded bg-red-600"><Play className="h-3 w-3 fill-white text-white" /></span>
+                  Watch it in action
+                </h3>
+                <div className="relative w-full rounded-xl overflow-hidden border border-border bg-black aspect-video">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${videoId}`}
+                    title={`${product.name} video`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 h-full w-full"
+                  />
+                </div>
+              </div>
+            ) : null
+          })()}
 
           {product.tags.length > 0 && (
             <div className="flex flex-wrap gap-2">

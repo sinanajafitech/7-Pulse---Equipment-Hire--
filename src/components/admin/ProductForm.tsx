@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { slugify } from "@/lib/utils"
 import type { Category } from "@/generated/prisma/client"
-import { X, Plus, Upload, Loader2 } from "lucide-react"
+import { X, Plus, Upload, Loader2, Play } from "lucide-react"
 import Image from "next/image"
 
 interface SerializedProduct {
@@ -32,6 +32,7 @@ interface SerializedProduct {
   weightKg: number | null
   dimensions: string | null
   powerW: number | null
+  youtubeUrl: string | null
   tags: string[]
 }
 
@@ -64,6 +65,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
     replacementPrice: product?.replacementPrice ? String(product.replacementPrice) : "",
     dimensions: product?.dimensions ?? "",
     powerW: product?.powerW ? String(product.powerW) : "",
+    youtubeUrl: product?.youtubeUrl ?? "",
     tags: product?.tags?.join(", ") ?? "",
   })
 
@@ -102,6 +104,7 @@ export function ProductForm({ product, categories }: ProductFormProps) {
         stockQty: parseInt(form.stockQty),
         replacementPrice: form.replacementPrice ? parseFloat(form.replacementPrice) : undefined,
         powerW: form.powerW ? parseInt(form.powerW) : undefined,
+        youtubeUrl: form.youtubeUrl || undefined,
         tags: form.tags.split(",").map((t) => t.trim()).filter(Boolean),
         specs: Object.keys(specsObj).length > 0 ? specsObj : undefined,
       }
@@ -170,6 +173,16 @@ export function ProductForm({ product, categories }: ProductFormProps) {
         <div className="space-y-1">
           <Label>Dimensions — optional</Label>
           <Input placeholder="L×W×H cm" value={form.dimensions} onChange={(e) => setForm((f) => ({ ...f, dimensions: e.target.value }))} />
+        </div>
+        <div className="col-span-2 space-y-1">
+          <Label className="flex items-center gap-1.5"><span className="inline-flex items-center justify-center h-4 w-4 rounded bg-red-600 shrink-0"><Play className="h-2.5 w-2.5 fill-white text-white" /></span>YouTube URL — optional</Label>
+          <Input
+            type="url"
+            placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+            value={form.youtubeUrl}
+            onChange={(e) => setForm((f) => ({ ...f, youtubeUrl: e.target.value }))}
+          />
+          <p className="text-xs text-muted-foreground">Paste any YouTube link — it will be embedded on the product page.</p>
         </div>
         <div className="space-y-1">
           <Label>Tags (comma-separated)</Label>

@@ -53,6 +53,7 @@ export const productSchema = z.object({
   weightKg: z.number().positive().optional(),
   dimensions: z.string().optional(),
   powerW: z.number().int().positive().optional(),
+  youtubeUrl: z.string().optional(),
   tags: z.array(z.string()).default([]),
 })
 
